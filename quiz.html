@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動問答測驗</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Quiz container -->
+    <div id="quiz-container" class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-2xl">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">詩歌體制問答測驗</h1>
+        
+        <!-- Questions section -->
+        <div id="questions-section" class="space-y-6">
+            <!-- Questions will be dynamically injected here -->
+        </div>
+
+        <!-- Buttons section -->
+        <div id="quiz-buttons" class="mt-8 flex justify-end space-x-4">
+            <button id="submit-btn" class="bg-blue-600 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:bg-blue-700 transition duration-300">
+                提交答案
+            </button>
+            <button id="restart-btn" class="hidden bg-green-600 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:bg-green-700 transition duration-300">
+                重新開始
+            </button>
+        </div>
+
+        <!-- Results section -->
+        <div id="results-section" class="mt-8 hidden">
+            <!-- Results will be shown here -->
+        </div>
+
+    </div>
+
+    <script>
+        // Array of quiz questions
+        // You can change the content of these questions to match your document
+        const questions = [
+            {
+                question: "指出五言絕詩的句數及字數",
+                options: ["五句，四個字", "四句，五個字", "八句，七個字"],
+                answer: "四句，五個字"
+            },
+            {
+                question: "指出七言律詩的句數？",
+                options: ["四", "六", "八", "不拘"],
+                answer: "八"
+            },
+            {
+                question: "律詩中，三、四句稱之為____聯？",
+                options: ["首聯", "頷聯", "頸聯", "尾聯"],
+                answer: "頷聯"
+            },
+            {
+                question: "不論絕詩和律詩，哪四句最後一字必須押韻？",
+                options: ["第一、二句", "第三、四、五、六句", "第一、三、五、六句", "第二、四、六、八句"],
+                answer: "第二、四、六、八句"
+            },
+            {
+                question: "律詩中，五、六句稱之為____聯？",
+                options: ["首聯", "頷聯", "頸聯", "尾聯"],
+                answer: "頸聯"
+            },
+            {
+                question: "絕詩的第一句可以押韻嗎？",
+                options: ["可以，但非必要", "可以", "不可以", "必須押韻"],
+                answer: "可以，但非必要"
+            },
+            {
+                question: "請問五言律詩和五言絕詩相差多少句？",
+                options: ["2", "4", "6", "8"],
+                answer: "4"
+            },
+            {
+                question: "杜甫《登樓》屬於什麼詩？",
+                options: ["古體詩", "新體詩", "五言絕句", "七言律詩"],
+                answer: "七言律詩"
+            },
+            {
+                question: "杜甫《登樓》以下哪聯是對偶？",
+                options: ["花近高樓傷客心，萬方多難此登臨。", "北極朝廷終不改，西山寇盜莫相侵。", "可憐後主還祠廟，日暮聊為梁甫吟。"],
+                answer: "北極朝廷終不改，西山寇盜莫相侵。"
+            },
+            {
+                question: "李白《月下獨酌》屬於什麼詩？",
+                options: ["古體詩", "絕句", "律詩", "近體詩"],
+                answer: "古體詩"
+            }
+        ];
+
+        const questionsSection = document.getElementById('questions-section');
+        const submitButton = document.getElementById('submit-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const resultsSection = document.getElementById('results-section');
+        let userAnswers = {};
+
+        // Function to render the questions
+        function renderQuiz() {
+            questionsSection.innerHTML = '';
+            resultsSection.classList.add('hidden');
+            submitButton.classList.remove('hidden');
+            restartButton.classList.add('hidden');
+            userAnswers = {};
+
+            questions.forEach((q, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('bg-gray-100', 'p-6', 'rounded-xl', 'shadow-md');
+                questionElement.innerHTML = `
+                    <p class="font-bold text-lg text-gray-700 mb-4">${index + 1}. ${q.question}</p>
+                    <div class="space-y-2">
+                        ${q.options.map(option => `
+                            <label class="flex items-center space-x-2 cursor-pointer p-3 rounded-lg border-2 border-gray-200 hover:bg-gray-200 transition duration-200">
+                                <input type="radio" name="question-${index}" value="${option}" class="form-radio text-blue-600 h-5 w-5">
+                                <span class="text-gray-800">${option}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                questionsSection.appendChild(questionElement);
+            });
+
+            // Add event listener for radio button changes to store user's answers
+            document.querySelectorAll('input[type="radio"]').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const questionIndex = e.target.name.split('-')[1];
+                    userAnswers[questionIndex] = e.target.value;
+                });
+            });
+        }
+
+        // Function to check answers and show results
+        function checkAnswers() {
+            let score = 0;
+            resultsSection.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === q.answer;
+                const resultElement = document.createElement('div');
+                
+                resultElement.classList.add('p-4', 'rounded-xl', 'border-2', 'shadow-sm', 'mb-4');
+
+                // Determine the class based on correctness
+                if (isCorrect) {
+                    resultElement.classList.add('bg-green-100', 'border-green-500');
+                } else {
+                    resultElement.classList.add('bg-red-100', 'border-red-500');
+                }
+                const icon = isCorrect ? '✅' : '❌';
+                
+                resultElement.innerHTML = `
+                    <p class="font-semibold text-gray-800">${index + 1}. ${q.question} ${icon}</p>
+                    <p class="mt-1 text-sm ${isCorrect ? 'text-green-700' : 'text-red-700'}">你的答案: ${userAnswer || '未作答'}</p>
+                    ${!isCorrect ? `<p class="mt-1 text-sm text-gray-600">正確答案: ${q.answer}</p>` : ''}
+                `;
+                
+                resultsSection.appendChild(resultElement);
+                if (isCorrect) {
+                    score++;
+                }
+            });
+
+            const totalScoreElement = document.createElement('h2');
+            totalScoreElement.classList.add('text-2xl', 'font-bold', 'text-center', 'mt-4', 'text-gray-800');
+            totalScoreElement.textContent = `你的得分: ${score} / ${questions.length}`;
+            resultsSection.prepend(totalScoreElement);
+
+            // Hide questions and show results
+            questionsSection.classList.add('hidden');
+            submitButton.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+            restartButton.classList.remove('hidden');
+        }
+
+        // Event listeners for buttons
+        submitButton.addEventListener('click', checkAnswers);
+        restartButton.addEventListener('click', () => {
+            questionsSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+            renderQuiz();
+        });
+
+        // Initial render of the quiz
+        renderQuiz();
+
+    </script>
+</body>
+</html>
